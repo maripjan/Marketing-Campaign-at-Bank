@@ -138,46 +138,59 @@ def show_categorical_correlation(df: pd.DataFrame, target: str = 'y', cols_to_co
 
     if cols_to_consider is None:
         cols_to_consider = df.select_dtypes(include='object').columns.drop(target, errors='ignore').tolist()
+    
+    # Order the 'month' column if it is in the columns to consider
+    if 'month' in cols_to_consider:
+        month_order = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec']
+        df['month'] = pd.Categorical(df['month'], categories=month_order, ordered=True)
 
+    # Define the number of rows and columns for the subplot grid    
     num_cols = len(cols_to_consider)
     ncols = int(np.ceil(np.sqrt(num_cols)))  # Number of columns in subplot grid
     nrows = int(np.ceil(num_cols / ncols))   # Number of rows in subplot grid
 
     fig, axes = plt.subplots(nrows, ncols, figsize=figsize)
     axes = axes.flatten()  # Flatten the axes array for easier indexing
+    
+    # Create a DataFrame to store the results of the correlation analysis 
+    df_cat_corr = pd.DataFrame(columns=["Column", "Chi2", "Cramer's V", "P-Value", "alpha", "is_significant"])    
 
+    # Iterate over the columns to consider
     for idx, col in enumerate(cols_to_consider):
         contingency_table = pd.crosstab(df[col], df[target])
 
         # Chi-square test and Cramer's V
         chi2, p, dof, expected = chi2_contingency(contingency_table)
+        chi2, p = chi2.round(2), p.round(2)
         n = contingency_table.sum().sum()
-        cramers_v = np.sqrt((chi2 / n) * ((min(contingency_table.shape) - 1)**-1))       
+        cramers_v = np.sqrt((chi2 / n) * ((min(contingency_table.shape) - 1)**-1)).round(2)
+        alpha = 0.05  # Significance level  
+        # Add results to the DataFrame
+        row = pd.DataFrame([{"Column": col, "Chi2": chi2, "Cramer's V": cramers_v, "P-Value": p, "alpha": alpha, "is_significant": p < alpha}])
+        df_cat_corr = pd.concat([df_cat_corr, row], ignore_index=True)           
 
         # If specified, show the proportions of 'yes' for each category        
-        if show_details:
-            print(f"--- Analysis for column: {col} ---")
+        if show_details:            
+            # Show if the association is statistically significant   
+            print(f"----> Corr. Analysis for column: {col}* ", end="\n\n")
             print(f"Chi-square statistic: {chi2:.2f} (P-value: {p:.2f})")        
-            print(f"Cramer's V: {cramers_v:.2f}")
-            # Show if the association is statistically significant
-            alpha = 0.05
-            if p < alpha:
-                print(f"Statistically significant association (p < {alpha})")
-            else:
-                print(f"No statistically significant association (p >= {alpha})")
+            print(f"Cramer's V: {cramers_v:.2f}")           
             # Calculate proportions of 'yes' for each category
             yes_proportions = contingency_table[df[target].unique()[1]] / contingency_table.sum(axis=1) if len(df[target].unique()) > 1 else contingency_table[df[target].unique()[0]] / contingency_table.sum(axis=1)
             print("\nProportion of 'yes' for each value in a category:")
             print(yes_proportions)
-            print("-" * 50)  # Separator between columns
+            print("-" * 50)  # Separator between different column names
 
         # Visualization (Stacked bar chart of proportions)
         (contingency_table.div(contingency_table.sum(axis=1), axis=0) * 100).plot(kind='bar', stacked=True, ax=axes[idx])
         axes[idx].set_title(f'Success rate by {col} (in % terms)')
-        axes[idx].set_ylabel('Percentage share')       
+        axes[idx].set_ylabel("Percentage share")    
+
     # Show all subplots
     plt.tight_layout()  # Adjust subplot params for a tight layout
     plt.show()
+    # Return the DataFrame with correlation results
+    return df_cat_corr   
 
 
 # if function is called directly, run the following code
