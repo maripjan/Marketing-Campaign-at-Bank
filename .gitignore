@@ -1,0 +1,32 @@
+# Logs
+logs/
+*.log
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# IDEs and editors
+.vscode/
+
+# Environment variables
+.env
+
+# Miscellaneous
+*.swp
+*.bak
+*.tmp
+
+# Python
+__pycache__/
+*.py[cod]
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+*.pyo
+
+# Jupyter Notebooks
+playground.ipynb
+.ipynb_checkpoints/
