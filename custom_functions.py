@@ -5,6 +5,8 @@ import pandas as pd
 import numpy as np
 from typing import List, Union, Tuple
 from sklearn.preprocessing import LabelEncoder
+from scipy.stats import chi2_contingency
+import matplotlib.pyplot as plt
 
 
 # Convert string columns to categorical variables
@@ -114,6 +116,68 @@ def probabilistic_imputation(df: pd.DataFrame, columns: Union[List[str], str] = 
                 df_imputed.loc[missing_indices, col] = np.random.choice(values, size=num_missing, p=probabilities)
 
     return df_imputed
+
+
+# Function to calculate the correlation between categorical columns and target variable
+def show_categorical_correlation(df: pd.DataFrame, target: str = 'y', cols_to_consider: list = None, show_details: bool = False, figsize: tuple = (15, 10)):
+    """
+    Analyzes the relationship between a target variable and multiple 
+    categorical columns, displaying results in a subplot grid.
+
+    Args:
+        df: The Pandas DataFrame.
+        target: The name of the target variable column.
+        cols_to_consider: A list of categorical column names. If None, uses all 
+                          categorical columns except the target.
+        show_details: If True, prints detailed results for each column.
+        figsize: Tuple specifying the figure size for the plot grid.
+
+    Returns:
+        None (displays plots and prints results).
+    """
+
+    if cols_to_consider is None:
+        cols_to_consider = df.select_dtypes(include='object').columns.drop(target, errors='ignore').tolist()
+
+    num_cols = len(cols_to_consider)
+    ncols = int(np.ceil(np.sqrt(num_cols)))  # Number of columns in subplot grid
+    nrows = int(np.ceil(num_cols / ncols))   # Number of rows in subplot grid
+
+    fig, axes = plt.subplots(nrows, ncols, figsize=figsize)
+    axes = axes.flatten()  # Flatten the axes array for easier indexing
+
+    for idx, col in enumerate(cols_to_consider):
+        contingency_table = pd.crosstab(df[col], df[target])
+
+        # Chi-square test and Cramer's V
+        chi2, p, dof, expected = chi2_contingency(contingency_table)
+        n = contingency_table.sum().sum()
+        cramers_v = np.sqrt((chi2 / n) * ((min(contingency_table.shape) - 1)**-1))       
+
+        # If specified, show the proportions of 'yes' for each category        
+        if show_details:
+            print(f"--- Analysis for column: {col} ---")
+            print(f"Chi-square statistic: {chi2:.2f} (P-value: {p:.2f})")        
+            print(f"Cramer's V: {cramers_v:.2f}")
+            # Show if the association is statistically significant
+            alpha = 0.05
+            if p < alpha:
+                print(f"Statistically significant association (p < {alpha})")
+            else:
+                print(f"No statistically significant association (p >= {alpha})")
+            # Calculate proportions of 'yes' for each category
+            yes_proportions = contingency_table[df[target].unique()[1]] / contingency_table.sum(axis=1) if len(df[target].unique()) > 1 else contingency_table[df[target].unique()[0]] / contingency_table.sum(axis=1)
+            print("\nProportion of 'yes' for each value in a category:")
+            print(yes_proportions)
+            print("-" * 50)  # Separator between columns
+
+        # Visualization (Stacked bar chart of proportions)
+        (contingency_table.div(contingency_table.sum(axis=1), axis=0) * 100).plot(kind='bar', stacked=True, ax=axes[idx])
+        axes[idx].set_title(f'Success rate by {col} (in % terms)')
+        axes[idx].set_ylabel('Percentage share')       
+    # Show all subplots
+    plt.tight_layout()  # Adjust subplot params for a tight layout
+    plt.show()
 
 
 # if function is called directly, run the following code
