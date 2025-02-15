@@ -9,6 +9,7 @@ from scipy.stats import chi2_contingency
 import seaborn as sns
 import matplotlib.pyplot as plt
 
+
 # Convert string columns to categorical variables
 def convert_to_categorical(
     df: pd.DataFrame, columns: Union[List[str], str] = "all"
@@ -213,33 +214,53 @@ def show_categorical_correlation(df: pd.DataFrame,
     plt.show()  # Display the plot
 
 
-# Function to plot histograms with KDE for specified columns
-def plot_histograms_with_kde(df, columns_to_plot, figsize=(15, 5)):
+# Function to plot relationship between given columns and the target variable via boxplots
+def plot_boxplots(
+    df: pd.DataFrame,
+    columns: List[str], 
+    target: str = 'y', 
+    figsize: Tuple[int, int] = (15, 3), 
+    subplot_grid_size: Tuple[int, int] = None
+):
+
     """
-    Plots histograms with KDE for the specified columns in the dataframe.
+    Plots boxplots between given columns and the target variable.
 
     Parameters:
-    df (pd.DataFrame): The dataframe containing the data.
-    columns_to_plot (list): List of column names to plot.
-    figsize (tuple): Size of the figure (width, height). Default is (15, 5).
+    df (pd.DataFrame): The DataFrame containing the data.
+    columns (List[str]): List of columns to plot.
+    target (str): The name of the target variable column.
+    figsize (Tuple[int, int]): Figure size for the plots.
+    subplot_grid_size (Tuple[int, int]): Grid size for the subplots (rows, columns).
 
     Returns:
     None
     """
-    # Define the number of columns and rows for the subplot grid
-    fig, axes = plt.subplots(nrows=1, ncols=len(columns_to_plot), figsize=figsize)
+    if subplot_grid_size is None:
+        # Define the number of rows and columns for the subplot grid
+        ncols = 2
+        nrows = int(np.ceil(len(columns) / ncols))
+    else:
+        nrows, ncols = subplot_grid_size
+
+    # Create subplots
+    fig, axes = plt.subplots(nrows, ncols, figsize=figsize)
     axes = axes.flatten()  # Flatten the axes array for easier indexing
 
-    # Iterate over the specified columns and create a histogram with KDE for each one
-    for idx, col in enumerate(columns_to_plot):
-        sns.histplot(df[col], kde=True, ax=axes[idx])
-        axes[idx].set_title(f'Ditribution of {col} values')
+    # Iterate over the specified columns and create a boxplot for each one
+    for idx, col in enumerate(columns):
+        sns.boxplot(
+            data=df, x=col, ax=axes[idx], hue=target, medianprops={"color": "red", "linewidth": 2}
+        )
+        axes[idx].set_title(f'Distribution by {col}*')
+        axes[idx].grid(True)
 
     # Remove any unused subplots
-    for idx in range(len(columns_to_plot), len(axes)):
+    for idx in range(len(columns), len(axes)):
         fig.delaxes(axes[idx])
 
     plt.tight_layout()
+    plt.grid(True)
     plt.show()
 
 
