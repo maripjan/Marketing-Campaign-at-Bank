@@ -9,7 +9,6 @@ from scipy.stats import chi2_contingency
 import seaborn as sns
 import matplotlib.pyplot as plt
 
-
 # Convert string columns to categorical variables
 def convert_to_categorical(
     df: pd.DataFrame, columns: Union[List[str], str] = "all"
@@ -135,6 +134,7 @@ def show_categorical_correlation(df: pd.DataFrame,
                                  cols_to_consider: list = None, 
                                  show_details: bool = False, 
                                  figsize: tuple = (15, 10), 
+                                 subplot_grid_size: Tuple[int, int] = None,
                                  annotate: bool = True) -> pd.DataFrame:
     
     """                           
@@ -148,6 +148,7 @@ def show_categorical_correlation(df: pd.DataFrame,
                           categorical columns except the target.
         show_details: If True, prints detailed results for each column.
         figsize: Tuple specifying the figure size for the plot grid.
+        subplot_grid_size: Tuple specifying the number of rows and columns for the subplot grid.
         annotate: If True, annotate the bars with percentage values.
     Returns:
         pd.DataFrame: A DataFrame containing the correlation analysis results.
@@ -161,10 +162,15 @@ def show_categorical_correlation(df: pd.DataFrame,
         month_order = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec']
         df['month'] = pd.Categorical(df['month'], categories=month_order, ordered=True)
 
-    # Define the number of rows and columns for the subplot grid    
-    num_cols = len(cols_to_consider)
-    ncols = int(np.ceil(np.sqrt(num_cols)))  # Number of columns in subplot grid
-    nrows = int(np.ceil(num_cols / ncols))   # Number of rows in subplot grid
+    # Define the number of rows and columns for the subplot grid  
+    # If the number of columns is not specified, calculate the optimal grid size
+    if subplot_grid_size is None:  
+        num_cols = len(cols_to_consider)
+        ncols = int(np.ceil(np.sqrt(num_cols)))  # Number of columns in subplot grid
+        nrows = int(np.ceil(num_cols / ncols))   # Number of rows in subplot grid
+
+    else:
+        nrows, ncols = subplot_grid_size[0], subplot_grid_size[1]
 
     fig, axes = plt.subplots(nrows, ncols, figsize=figsize)
     axes = axes.flatten()  # Flatten the axes array for easier indexing
@@ -197,7 +203,7 @@ def show_categorical_correlation(df: pd.DataFrame,
             for p in ax.patches:
                 width, height = p.get_width(), p.get_height()
                 x, y = p.get_xy() 
-                ax.annotate(f'{height:.1f}%', (x + width / 2, y + height / 2), ha='center', va='center')
+                ax.annotate(f'{height:.0f}%', (x + width / 2, y + height / 2), ha='center', va='center')
     
     # If specified, return the DataFrame with correlation results      
     if show_details is True:            
@@ -236,9 +242,7 @@ def plot_histograms_with_kde(df, columns_to_plot, figsize=(15, 5)):
     plt.tight_layout()
     plt.show()
 
+
 # if function is called directly, run the following code
-if __name__ == "__main__":
-    print(
-        "This file contains custom functions for data preprocessing and feature engineering."
-    )
+if __name__ == "__main__":   
     pass
