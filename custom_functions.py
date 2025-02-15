@@ -6,11 +6,14 @@ import numpy as np
 from typing import List, Union, Tuple
 from sklearn.preprocessing import LabelEncoder
 from scipy.stats import chi2_contingency
+import seaborn as sns
 import matplotlib.pyplot as plt
 
 
 # Convert string columns to categorical variables
-def convert_to_categorical(df: pd.DataFrame, columns: Union[List[str], str] = 'all') -> pd.DataFrame:
+def convert_to_categorical(
+    df: pd.DataFrame, columns: Union[List[str], str] = "all"
+) -> pd.DataFrame:
     """
     Convert specified columns of type object to categorical variables.
     If 'all' is given as columns, convert all string columns to categorical.
@@ -22,19 +25,21 @@ def convert_to_categorical(df: pd.DataFrame, columns: Union[List[str], str] = 'a
     Returns:
     pd.DataFrame: The DataFrame with converted columns.
     """
-    if columns == 'all':
+    if columns == "all":
         # Convert all object type columns to categorical
-        for col in df.select_dtypes(include=['object']).columns:
-            df[col] = df[col].astype('category')
+        for col in df.select_dtypes(include=["object"]).columns:
+            df[col] = df[col].astype("category")
     elif isinstance(columns, list):
         # Convert specified columns to categorical
         for col in columns:
-            if df[col].dtype == 'object':
-                df[col] = df[col].astype('category')
+            if df[col].dtype == "object":
+                df[col] = df[col].astype("category")
     else:
-        raise ValueError("Parameter 'columns' should be a list of column names or 'all'.")
+        raise ValueError(
+            "Parameter 'columns' should be a list of column names or 'all'."
+        )
     # Convert 'unknown' to None
-    df = df.replace({'unknown': None})
+    df = df.replace({"unknown": None})
     # Return the DataFrame with converted column types
     return df
 
@@ -51,7 +56,7 @@ def encode_categorical_columns(df: pd.DataFrame) -> Tuple[pd.DataFrame, dict]:
     Tuple[pd.DataFrame, dict]: A tuple containing the DataFrame with encoded categorical columns and a dictionary of LabelEncoders for each categorical column.
     """
     label_encoders = {}
-    for col in df.select_dtypes(include=['category', 'object']).columns:
+    for col in df.select_dtypes(include=["category", "object"]).columns:
         le = LabelEncoder()
         df[col] = le.fit_transform(df[col].astype(str))
         label_encoders[col] = le
@@ -76,7 +81,9 @@ def decode_categorical_columns(df: pd.DataFrame, label_encoders: dict) -> pd.Dat
 
 
 # Impute missing values in specified columns with the most frequent value
-def probabilistic_imputation(df: pd.DataFrame, columns: Union[List[str], str] = 'all') -> pd.DataFrame:
+def probabilistic_imputation(
+    df: pd.DataFrame, columns: Union[List[str], str] = "all"
+) -> pd.DataFrame:
     """
     Imputes missing values in specified columns of a DataFrame
     by probabilistically assigning them based on the observed
@@ -91,7 +98,7 @@ def probabilistic_imputation(df: pd.DataFrame, columns: Union[List[str], str] = 
     """
     df_imputed = df.copy()  # Create a copy to avoid modifying the original
 
-    if columns == 'all':
+    if columns == "all":
         columns = df.columns  # Impute all columns if none specified
 
     for col in columns:
@@ -109,18 +116,28 @@ def probabilistic_imputation(df: pd.DataFrame, columns: Union[List[str], str] = 
 
             if pd.api.types.is_categorical_dtype(df[col]):
                 df_imputed.loc[missing_indices, col] = pd.Categorical.from_codes(
-                    np.random.choice(range(len(values)), size=num_missing, p=probabilities),
-                    categories=df[col].cat.categories
+                    np.random.choice(
+                        range(len(values)), size=num_missing, p=probabilities
+                    ),
+                    categories=df[col].cat.categories,
                 )
             else:
-                df_imputed.loc[missing_indices, col] = np.random.choice(values, size=num_missing, p=probabilities)
+                df_imputed.loc[missing_indices, col] = np.random.choice(
+                    values, size=num_missing, p=probabilities
+                )
 
     return df_imputed
 
 
 # Function to calculate the correlation between categorical columns and target variable
-def show_categorical_correlation(df: pd.DataFrame, target: str = 'y', cols_to_consider: list = None, show_details: bool = False, figsize: tuple = (15, 10)):
-    """
+def show_categorical_correlation(df: pd.DataFrame, 
+                                 target: str = 'y', 
+                                 cols_to_consider: list = None, 
+                                 show_details: bool = False, 
+                                 figsize: tuple = (15, 10), 
+                                 annotate: bool = True) -> pd.DataFrame:
+    
+    """                           
     Analyzes the relationship between a target variable and multiple 
     categorical columns, displaying results in a subplot grid.
 
@@ -131,9 +148,9 @@ def show_categorical_correlation(df: pd.DataFrame, target: str = 'y', cols_to_co
                           categorical columns except the target.
         show_details: If True, prints detailed results for each column.
         figsize: Tuple specifying the figure size for the plot grid.
-
+        annotate: If True, annotate the bars with percentage values.
     Returns:
-        None (displays plots and prints results).
+        pd.DataFrame: A DataFrame containing the correlation analysis results.
     """
 
     if cols_to_consider is None:
@@ -167,33 +184,61 @@ def show_categorical_correlation(df: pd.DataFrame, target: str = 'y', cols_to_co
         alpha = 0.05  # Significance level  
         # Add results to the DataFrame
         row = pd.DataFrame([{"Column": col, "Chi2": chi2, "Cramer's V": cramers_v, "P-Value": p, "alpha": alpha, "is_significant": p < alpha}])
-        df_cat_corr = pd.concat([df_cat_corr, row], ignore_index=True)           
-
-        # If specified, show the proportions of 'yes' for each category        
-        if show_details:            
-            # Show if the association is statistically significant   
-            print(f"----> Corr. Analysis for column: {col}* ", end="\n\n")
-            print(f"Chi-square statistic: {chi2:.2f} (P-value: {p:.2f})")        
-            print(f"Cramer's V: {cramers_v:.2f}")           
-            # Calculate proportions of 'yes' for each category
-            yes_proportions = contingency_table[df[target].unique()[1]] / contingency_table.sum(axis=1) if len(df[target].unique()) > 1 else contingency_table[df[target].unique()[0]] / contingency_table.sum(axis=1)
-            print("\nProportion of 'yes' for each value in a category:")
-            print(yes_proportions)
-            print("-" * 50)  # Separator between different column names
-
+        df_cat_corr = pd.concat([df_cat_corr, row], ignore_index=True)   
+       
         # Visualization (Stacked bar chart of proportions)
-        (contingency_table.div(contingency_table.sum(axis=1), axis=0) * 100).plot(kind='bar', stacked=True, ax=axes[idx])
+        proportions = contingency_table.div(contingency_table.sum(axis=1), axis=0) * 100
+        ax = proportions.plot(kind='bar', stacked=True, ax=axes[idx])
         axes[idx].set_title(f'Success rate by {col} (in % terms)')
-        axes[idx].set_ylabel("Percentage share")    
+        axes[idx].set_ylabel("Percentage share")
 
+        if annotate is True:
+            # Annotate bars with percentage values
+            for p in ax.patches:
+                width, height = p.get_width(), p.get_height()
+                x, y = p.get_xy() 
+                ax.annotate(f'{height:.1f}%', (x + width / 2, y + height / 2), ha='center', va='center')
+    
+    # If specified, return the DataFrame with correlation results      
+    if show_details is True:            
+        return df_cat_corr
     # Show all subplots
     plt.tight_layout()  # Adjust subplot params for a tight layout
-    plt.show()
-    # Return the DataFrame with correlation results
-    return df_cat_corr   
+    plt.show()  # Display the plot
 
+
+# Function to plot histograms with KDE for specified columns
+def plot_histograms_with_kde(df, columns_to_plot, figsize=(15, 5)):
+    """
+    Plots histograms with KDE for the specified columns in the dataframe.
+
+    Parameters:
+    df (pd.DataFrame): The dataframe containing the data.
+    columns_to_plot (list): List of column names to plot.
+    figsize (tuple): Size of the figure (width, height). Default is (15, 5).
+
+    Returns:
+    None
+    """
+    # Define the number of columns and rows for the subplot grid
+    fig, axes = plt.subplots(nrows=1, ncols=len(columns_to_plot), figsize=figsize)
+    axes = axes.flatten()  # Flatten the axes array for easier indexing
+
+    # Iterate over the specified columns and create a histogram with KDE for each one
+    for idx, col in enumerate(columns_to_plot):
+        sns.histplot(df[col], kde=True, ax=axes[idx])
+        axes[idx].set_title(f'Ditribution of {col} values')
+
+    # Remove any unused subplots
+    for idx in range(len(columns_to_plot), len(axes)):
+        fig.delaxes(axes[idx])
+
+    plt.tight_layout()
+    plt.show()
 
 # if function is called directly, run the following code
 if __name__ == "__main__":
-    print("This file contains custom functions for data preprocessing and feature engineering.")
+    print(
+        "This file contains custom functions for data preprocessing and feature engineering."
+    )
     pass
