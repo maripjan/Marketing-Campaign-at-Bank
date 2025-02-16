@@ -33,5 +33,11 @@
         "entrepreneur": "high",
         "admin.": "mid",
         "management": "high"
+    },
+    "truncation_values": {
+        "age": {"lower": 20, "upper": 70},
+        "duration_mins": {"lower": 0, "upper": 20},
+        "campaign": {"lower": 0, "upper": 10},
+        "previous": {"lower": 0, "upper": 3}
     }
 }

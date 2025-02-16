@@ -42,16 +42,16 @@ class Input:
         return self.df
 
     # Function that does end-to-end preprocessing    
-    def preprocess(self):
+    def preprocess(self, mappings='mappings.json'):
         self.df = self.clean_imported_data()
         self.df = self.regroup_categories()
         self.df = self.df.drop_duplicates()
-
-        # Finally, truncate numerical cols to exclude outlliers
-        self.df = cf.truncate_values(self.df, 'age', lower=20, upper=70)
-        self.df = cf.truncate_values(self.df, 'duration_mins', lower=0, upper=20)
-        self.df = cf.truncate_values(self.df, 'campaign', lower=0, upper=10)
-        self.df = cf.truncate_values(self.df, 'previous', lower=0, upper=3)
+        # Truncate numerical cols to exclude outliers using values from mappings        
+        with open(mappings, 'r') as file:   # Load truncation values from JSON file
+            mappings = json.load(file)        
+        truncation_values = mappings['truncation_values']       
+        for col, limits in truncation_values.items():
+            self.df = cf.truncate_values(self.df, col, lower=limits['lower'], upper=limits['upper'])        
         return self.df
 
 
