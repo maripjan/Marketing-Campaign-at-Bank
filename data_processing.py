@@ -1,19 +1,39 @@
 import pandas as pd
 import sqlite3
+import custom_functions as cf
+import json
 
 
 # Class to read input data from different formats
 class Input:
-    def __init__(self, df_path):
-        self.df = pd.read_csv(df_path)
+    def __init__(self, df_path):        
+        self.df = pd.read_csv(df_path)        
     
-    def process_data(self):
-        # Example processing steps
-        self.df.drop(columns=['unnecessary_column'], inplace=True)
-        self.df['date_column'] = pd.to_datetime(self.df['date_column'])
-        self.df['numeric_column'] = self.df['numeric_column'].replace({-1: 0})
-        self.df['new_column'] = self.df['existing_column'] * 2
+    # Method to clean data immediately after reading
+    def clean_imported_data(self):
+        cols_to_drop = ['month', 'default']  # Columns to drop       
+        self.df = self.df.drop(cols_to_drop)  # Drop columns that are not needed
+        self.df = self.df.replace({'unknown': None})  # Replace original values for certain columns
+        self.df = cf.probabilistic_imputation(self.df)  # Impute N/A using relative frequency method
+        self.df = cf.convert_to_categorical(self.df, columns='all')  # Convert all string columns to categorical
+        self.df['duration_mins'] = (self.df['duration'] / 60).round().astype(int)  # Express call duration in mins and round to nearest integer
+        return self.df
 
+    # Method to regroup categories in the data according to existing mappings
+    def regroup_categories(self, mappings='mappings.json'):       
+        # Load mappings from JSON file
+        with open(mappings, 'r') as f:
+            mappings = json.load(f)
+        
+        education_level_mapping = mappings['education_level']
+        job_category_mapping = mappings['job_category']
+        income_level_mapping = mappings['income_level']
+
+        self.df['education_level'] = self.df['education'].map(education_level_mapping).astype('category')  # Map education levels
+        self.df['job_type'] = self.df['job'].map(job_category_mapping).astype('category')  # Map job categories
+        self.df['income_level'] = self.df['job'].map(income_level_mapping).astype('category')  # Map income levels
+        return self.df
+        
 
 # Class to save output to different formats
 class Output:
@@ -30,6 +50,9 @@ class Output:
     def to_parquet(self, file_name):
         self.df.to_parquet(file_name, index=False)
 
+
+if __name__ == '__main__':
+    pass
 # Example usage:
 # input_processor = Input('data.csv')
 # input_processor.process_data()

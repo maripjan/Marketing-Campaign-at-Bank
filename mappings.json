@@ -1,0 +1,37 @@
+{
+    "education_level_mapping": {
+        "illiterate": "low",
+        "basic.4y": "low",
+        "basic.6y": "low",
+        "basic.9y": "low",
+        "high.school": "mid",
+        "professional.course": "mid",
+        "university.degree": "high"
+    },
+    "job_category_mapping": {
+        "admin.": "white-collar",
+        "blue-collar": "blue-collar",
+        "entrepreneur": "white-collar",
+        "housemaid": "blue-collar",
+        "management": "white-collar",
+        "retired": "out-of-workforce",
+        "self-employed": "white-collar",
+        "services": "blue-collar",
+        "student": "out-of-workforce",
+        "technician": "blue-collar",
+        "unemployed": "out-of-workforce"
+    },
+    "income_level_mapping": {
+        "unemployed": "low",
+        "student": "low",
+        "retired": "low",
+        "self-employed": "mid",
+        "services": "mid",
+        "technician": "mid",
+        "housemaid": "mid",
+        "blue-collar": "mid",
+        "entrepreneur": "high",
+        "admin.": "mid",
+        "management": "high"
+    }
+}
