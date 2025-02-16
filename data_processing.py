@@ -17,8 +17,12 @@ class Input:
         self.df = cf.probabilistic_imputation(self.df)  # Impute N/A using relative frequency method
         self.df = cf.convert_to_categorical(self.df, columns='all')  # Convert all string columns to categorical
         self.df['duration_mins'] = (self.df['duration'] / 60).round().astype(int)  # Express call duration in mins and round to nearest integer
+        
         # Drop the original column where duration was calculated in seconds
         self.df = self.df.drop(columns=['duration'], errors='ignore')
+
+        # Replace extermely rare value "illeterate" with the closest value "basic.4years"
+        self.df['education'] = self.df['education'].replace('illiterate', 'basic.4y')
         return self.df
 
     # Method to regroup categories in the data according to existing mappings
