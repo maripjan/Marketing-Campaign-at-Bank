@@ -50,14 +50,15 @@ class Input:
         self.df = pd.read_csv(self.df_path)  
         self.df = self.clean_imported_data()
         self.df = self.regroup_categories()
-        self.df = self.df.drop_duplicates()
-
+        
         # Truncate numerical cols to exclude outliers using values from mappings        
         with open(mappings, 'r') as file:   # Load truncation values from JSON file
             mappings = json.load(file)        
         truncation_values = mappings['truncation_values']       
         for col, limits in truncation_values.items():
-            self.df = cf.truncate_values(self.df, col, lower=limits['lower'], upper=limits['upper'])        
+            self.df = cf.truncate_values(self.df, col, lower=limits['lower'], upper=limits['upper'])   
+        # Finally, remove all duplicates
+        self.df = self.df.drop_duplicates()     
         return self.df
 
 
