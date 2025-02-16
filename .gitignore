@@ -29,6 +29,8 @@ build/
 .flake8
 .python-version
 __pycache__
+hello.py
+.
 
 # Jupyter Notebooks
 playground.ipynb
