@@ -11,7 +11,7 @@ class Input:
     
     # Method to clean data immediately after reading
     def clean_imported_data(self):
-        cols_to_drop = ['month', 'default']  # Columns to drop       
+        cols_to_drop = ['month', 'default', 'housing', 'loan']       
         self.df = self.df.drop(cols_to_drop)  # Drop columns that are not needed
         self.df = self.df.replace({'unknown': None})  # Replace original values for certain columns
         self.df = cf.probabilistic_imputation(self.df)  # Impute N/A using relative frequency method
@@ -32,6 +32,33 @@ class Input:
         self.df['education_level'] = self.df['education'].map(education_level_mapping).astype('category')  # Map education levels
         self.df['job_type'] = self.df['job'].map(job_category_mapping).astype('category')  # Map job categories
         self.df['income_level'] = self.df['job'].map(income_level_mapping).astype('category')  # Map income levels
+
+        # Create new boolean columns based on previous contact attempts and deposit outcomes
+        self.df['was_contacted_before'] = self.df['previous'].apply(lambda previous: True if previous > 0 else False)
+        self.df['deposited_before'] = self.df['poutcome'].apply(lambda outcome: True if outcome == 'success' else False)
+        # Drop the original columns
+        self.df = self.df.drop(columns=['education', 'job', 'duration'], errors='ignore')
+        return self.df
+    
+    def truncate_values(self, column, lower=None, upper=None):
+        """
+        Truncate values in a specified column of a DataFrame.
+
+        Parameters:
+        df (pd.DataFrame): The DataFrame containing the column to truncate.
+        column (str): The name of the column to truncate.
+        lower (numeric, optional): The lower bound for truncation. If None, the 5th percentile is used.
+        upper (numeric, optional): The upper bound for truncation. If None, the 95th percentile is used.
+
+        Returns:
+        pd.DataFrame: The DataFrame with truncated values in the specified column.
+        """
+        if lower is None:
+            lower = self.df[column].quantile(0.05)
+        if upper is None:
+            upper = self.df[column].quantile(0.95)
+        
+        self.df[column] = self.df[column].clip(lower=lower, upper=upper)
         return self.df
         
 
