@@ -29,4 +29,5 @@ build/
 
 # Jupyter Notebooks
 playground.ipynb
+boilerplate.ipynb
 .ipynb_checkpoints/

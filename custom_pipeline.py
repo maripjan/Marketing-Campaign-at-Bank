@@ -68,7 +68,7 @@ class TruncateValues(BaseEstimator, TransformerMixin):
 
 class OneHotEncodeCategorical(BaseEstimator, TransformerMixin):
     def __init__(self):
-        self.encoder = OneHotEncoder(sparse=False, drop='first')
+        self.encoder = OneHotEncoder(sparse_output=False, drop='first')
 
     def fit(self, X, y=None):
         categorical_columns = X.select_dtypes(include=['category', 'object']).columns
