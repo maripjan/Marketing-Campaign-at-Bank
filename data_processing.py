@@ -7,12 +7,12 @@ import json
 # Class to read input data from different formats
 class Input:
     def __init__(self, df_path):        
-        self.df = pd.read_csv(df_path)        
+        self.df_path = df_path      
     
     # Method to clean data immediately after reading
     def clean_imported_data(self):
         cols_to_drop = ['month', 'default', 'housing', 'loan']       
-        self.df = self.df.drop(cols_to_drop)  # Drop initially useless columns
+        self.df = self.df.drop(columns=cols_to_drop)  # Drop initially useless columns
         self.df = self.df.replace({'unknown': None})  # Replace original values for certain columns
         self.df = cf.probabilistic_imputation(self.df)  # Impute N/A using relative frequency method
         self.df = cf.convert_to_categorical(self.df, columns='all')  # Convert all string columns to categorical
@@ -27,9 +27,9 @@ class Input:
         with open(mappings, 'r') as f:
             mappings = json.load(f)
         
-        education_level_mapping = mappings['education_level']
-        job_type_mapping = mappings['job_category']
-        income_level_mapping = mappings['income_level']
+        education_level_mapping = mappings['education_level_mapping']
+        job_type_mapping = mappings['job_category_mapping']
+        income_level_mapping = mappings['income_level_mapping']
 
         self.df['education_level'] = self.df['education'].map(education_level_mapping).astype('category')  # Map education levels
         self.df['job_type'] = self.df['job'].map(job_type_mapping).astype('category')  # Map job categories
@@ -43,9 +43,11 @@ class Input:
 
     # Function that does end-to-end preprocessing    
     def preprocess(self, mappings='mappings.json'):
+        self.df = pd.read_csv(self.df_path)  
         self.df = self.clean_imported_data()
         self.df = self.regroup_categories()
         self.df = self.df.drop_duplicates()
+
         # Truncate numerical cols to exclude outliers using values from mappings        
         with open(mappings, 'r') as file:   # Load truncation values from JSON file
             mappings = json.load(file)        
