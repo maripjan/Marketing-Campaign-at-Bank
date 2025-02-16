@@ -12,11 +12,13 @@ class Input:
     # Method to clean data immediately after reading
     def clean_imported_data(self):
         cols_to_drop = ['month', 'default', 'housing', 'loan']       
-        self.df = self.df.drop(cols_to_drop)  # Drop columns that are not needed
+        self.df = self.df.drop(cols_to_drop)  # Drop initially useless columns
         self.df = self.df.replace({'unknown': None})  # Replace original values for certain columns
         self.df = cf.probabilistic_imputation(self.df)  # Impute N/A using relative frequency method
         self.df = cf.convert_to_categorical(self.df, columns='all')  # Convert all string columns to categorical
         self.df['duration_mins'] = (self.df['duration'] / 60).round().astype(int)  # Express call duration in mins and round to nearest integer
+        # Drop the original column where duration was calculated in seconds
+        self.df = self.df.drop(columns=['duration'], errors='ignore')
         return self.df
 
     # Method to regroup categories in the data according to existing mappings
@@ -26,18 +28,17 @@ class Input:
             mappings = json.load(f)
         
         education_level_mapping = mappings['education_level']
-        job_category_mapping = mappings['job_category']
+        job_type_mapping = mappings['job_category']
         income_level_mapping = mappings['income_level']
 
         self.df['education_level'] = self.df['education'].map(education_level_mapping).astype('category')  # Map education levels
-        self.df['job_type'] = self.df['job'].map(job_category_mapping).astype('category')  # Map job categories
+        self.df['job_type'] = self.df['job'].map(job_type_mapping).astype('category')  # Map job categories
         self.df['income_level'] = self.df['job'].map(income_level_mapping).astype('category')  # Map income levels
 
         # Create new boolean columns based on previous contact attempts and deposit outcomes
         self.df['was_contacted_before'] = self.df['previous'].apply(lambda previous: True if previous > 0 else False)
         self.df['deposited_before'] = self.df['poutcome'].apply(lambda outcome: True if outcome == 'success' else False)
-        # Drop the original columns
-        self.df = self.df.drop(columns=['education', 'job', 'duration'], errors='ignore')
+       
         return self.df
 
     # Function that does end-to-end preprocessing    
@@ -45,6 +46,12 @@ class Input:
         self.df = self.clean_imported_data()
         self.df = self.regroup_categories()
         self.df = self.df.drop_duplicates()
+
+        # Finally, truncate numerical cols to exclude outlliers
+        self.df = cf.truncate_values(self.df, 'age', lower=20, upper=70)
+        self.df = cf.truncate_values(self.df, 'duration_mins', lower=0, upper=20)
+        self.df = cf.truncate_values(self.df, 'campaign', lower=0, upper=10)
+        self.df = cf.truncate_values(self.df, 'previous', lower=0, upper=3)
         return self.df
 
 
