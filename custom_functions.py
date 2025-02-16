@@ -233,7 +233,7 @@ def plot_relative_freq(df, col, target='y', figsize=(12, 3)):
     # --- Left Plot: 
     plt.subplot(1, 2, 1)  # 1 row, 2 columns, first plot
     poutcome_counts = df.groupby([col, target]).size().unstack()    # Calculate total nums for each value and 'y' combination
-    poutcome_counts.plot(kind='bar', stacked=False, color=['red', 'green'], ax=plt.gca()) # Plot the counts as a stacked bar chart
+    poutcome_counts.plot(kind='bar', stacked=False, color=['red', 'green'], ax=plt.gca())   # Plot the counts as a stacked bar chart
     # Add labels and title
     plt.title(f'Distr. of {col}* segmented by outcome')
     plt.ylabel('Number of occurrences')
@@ -241,8 +241,8 @@ def plot_relative_freq(df, col, target='y', figsize=(12, 3)):
 
     # --- Right Plot:
     plt.subplot(1, 2, 2)  # 1 row, 2 columns, second plot
-    poutcome_proportions = poutcome_counts.div(poutcome_counts.sum(axis=1), axis=0) # Calculate proportions of 'y' within 'column'
-    poutcome_proportions.plot(kind='bar', stacked=True, ax=plt.gca()) # Plot the proportions as a stacked bar chart
+    poutcome_proportions = poutcome_counts.div(poutcome_counts.sum(axis=1), axis=0)  # Calculate proportions of 'y' within 'column'
+    poutcome_proportions.plot(kind='bar', stacked=True, ax=plt.gca())   # Plot the proportions as a stacked bar chart
     # Add labels and title
     plt.title(f'Deposit rate by {col}*')
     plt.ylabel('Proportions')
@@ -251,7 +251,7 @@ def plot_relative_freq(df, col, target='y', figsize=(12, 3)):
     for p in plt.gca().patches:
         width, height = p.get_width(), p.get_height()
         x, y = p.get_xy()
-        plt.gca().annotate(f'{height:.2f}', (x + width/2, y + height/2), ha='center', va='center', fontsize=8, color='black')
+        plt.gca().annotate(f'{height:.2f}', (x + width / 2, y + height / 2), ha='center', va='center', fontsize=8, color='black')
     plt.tight_layout()  # Adjust the plots to fit into the figure area
     plt.show()  # Display the plots
 
