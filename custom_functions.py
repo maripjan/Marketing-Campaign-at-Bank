@@ -214,6 +214,48 @@ def show_categorical_correlation(df: pd.DataFrame,
     plt.show()  # Display the plot
 
 
+# Function to plot the distribution of a column segmented by the target variable
+def plot_relative_freq(df, col, target='y', figsize=(12, 3)):
+    """
+    Plots the relative frequency of each column segmented by the target variable.
+
+    Args:
+        df: The Pandas DataFrame.
+        col: Column name.
+        target: The name of the target variable.
+        figsize: Tuple specifying the figure size for the plot.
+
+    Returns:
+        Two side-by-side plots showing the relative frequency of the column segmented by the target variable.
+    """
+    plt.figure(figsize=figsize)  # Adjust figure size for side-by-side plots
+
+    # --- Left Plot: 
+    plt.subplot(1, 2, 1)  # 1 row, 2 columns, first plot
+    poutcome_counts = df.groupby([col, target]).size().unstack()    # Calculate total nums for each value and 'y' combination
+    poutcome_counts.plot(kind='bar', stacked=False, color=['red', 'green'], ax=plt.gca()) # Plot the counts as a stacked bar chart
+    # Add labels and title
+    plt.title(f'Distr. of {col}* segmented by outcome')
+    plt.ylabel('Number of occurrences')
+    plt.xticks(rotation=0)  # Rotate x-axis labels if needed
+
+    # --- Right Plot:
+    plt.subplot(1, 2, 2)  # 1 row, 2 columns, second plot
+    poutcome_proportions = poutcome_counts.div(poutcome_counts.sum(axis=1), axis=0) # Calculate proportions of 'y' within 'column'
+    poutcome_proportions.plot(kind='bar', stacked=True, ax=plt.gca()) # Plot the proportions as a stacked bar chart
+    # Add labels and title
+    plt.title(f'Deposit rate by {col}*')
+    plt.ylabel('Proportions')
+    plt.xticks(rotation=0)  # Rotate x-axis labels if needed
+    # Add proportion labels on top of bars
+    for p in plt.gca().patches:
+        width, height = p.get_width(), p.get_height()
+        x, y = p.get_xy()
+        plt.gca().annotate(f'{height:.2f}', (x + width/2, y + height/2), ha='center', va='center', fontsize=8, color='black')
+    plt.tight_layout()  # Adjust the plots to fit into the figure area
+    plt.show()  # Display the plots
+
+
 # Function to plot relationship between given columns and the target variable via boxplots
 def plot_boxplots(
     df: pd.DataFrame,
