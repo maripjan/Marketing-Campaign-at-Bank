@@ -39,31 +39,12 @@ class Input:
         # Drop the original columns
         self.df = self.df.drop(columns=['education', 'job', 'duration'], errors='ignore')
         return self.df
-    
-    def truncate_values(self, column, lower=None, upper=None):
-        """
-        Truncate values in a specified column of a DataFrame.
 
-        Parameters:
-        df (pd.DataFrame): The DataFrame containing the column to truncate.
-        column (str): The name of the column to truncate.
-        lower (numeric, optional): The lower bound for truncation. If None, the 5th percentile is used.
-        upper (numeric, optional): The upper bound for truncation. If None, the 95th percentile is used.
-
-        Returns:
-        pd.DataFrame: The DataFrame with truncated values in the specified column.
-        """
-        if lower is None:
-            lower = self.df[column].quantile(0.05)
-        if upper is None:
-            upper = self.df[column].quantile(0.95)
-        
-        self.df[column] = self.df[column].clip(lower=lower, upper=upper)
-        return self.df
-    
+    # Function that does end-to-end preprocessing    
     def preprocess(self):
         self.df = self.clean_imported_data()
         self.df = self.regroup_categories()
+        self.df = self.df.drop_duplicates()
         return self.df
 
 

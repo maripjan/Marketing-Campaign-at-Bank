@@ -44,6 +44,27 @@ def convert_to_categorical(
     return df
 
 
+def truncate_values(df, column, lower=None, upper=None):
+    """
+    Truncate values in a specified column of a DataFrame.
+
+    Parameters:
+        df (pd.DataFrame): The DataFrame containing the column to truncate.
+        column (str): The name of the column to truncate.
+        lower (numeric, optional): The lower bound for truncation. If None, the 5th percentile is used.
+        upper (numeric, optional): The upper bound for truncation. If None, the 95th percentile is used.
+
+    Returns:
+        pd.DataFrame: The DataFrame with truncated values in the specified column.
+    """
+    if lower is None:
+        lower = df[column].quantile(0.05)
+    if upper is None:
+        upper = df[column].quantile(0.95)        
+    df[column] = df[column].clip(lower=lower, upper=upper)
+    return df
+
+
 # Encode categorical columns to numeric values
 def encode_categorical_columns(df: pd.DataFrame) -> Tuple[pd.DataFrame, dict]:
     """

@@ -11,15 +11,15 @@
     "job_category_mapping": {
         "admin.": "white-collar",
         "blue-collar": "blue-collar",
-        "entrepreneur": "white-collar",
+        "entrepreneur": "entrepreneur",
         "housemaid": "blue-collar",
         "management": "white-collar",
-        "retired": "out-of-workforce",
-        "self-employed": "white-collar",
+        "retired": "retired",
+        "self-employed": "entrepreneur",
         "services": "blue-collar",
-        "student": "out-of-workforce",
+        "student": "student",
         "technician": "blue-collar",
-        "unemployed": "out-of-workforce"
+        "unemployed": "unemployed"
     },
     "income_level_mapping": {
         "unemployed": "low",
