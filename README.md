@@ -1,8 +1,7 @@
-Sure, here is a sample README.md file for your project:
 
 ### README.md
 
-```markdown
+
 # Marketing Campaign at Bank
 
 This project aims to predict the success of marketing campaigns conducted by a bank. The goal is to determine whether a customer will subscribe to a term deposit based on various features such as age, job, marital status, education, and more.
