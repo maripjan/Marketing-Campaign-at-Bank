@@ -60,7 +60,12 @@ class Input:
         
         self.df[column] = self.df[column].clip(lower=lower, upper=upper)
         return self.df
-        
+    
+    def preprocess(self):
+        self.df = self.clean_imported_data()
+        self.df = self.regroup_categories()
+        return self.df
+
 
 # Class to save output to different formats
 class Output:
