@@ -19,7 +19,7 @@ This project aims to predict the success of marketing campaigns conducted by a b
 ### Prerequisites
 
 - Python 3.8 or higher
-- pip (Python package installer)
+- pip, uv or poetry (Python package managers)
 
 ### Setting Up the Environment
 
