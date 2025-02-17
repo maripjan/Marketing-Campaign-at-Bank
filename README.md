@@ -71,7 +71,7 @@ This project aims to predict the success of marketing campaigns conducted by a b
    ```json
    {
      "X": [
-      ```json
+      
       {
          "age": 33,
          "job": "blue-collar",
@@ -90,7 +90,7 @@ This project aims to predict the success of marketing campaigns conducted by a b
          "was_contacted_before": false,
          "deposited_before": false
       }
-      ```
+      
      ]
    }
    ```
