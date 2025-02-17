@@ -71,28 +71,26 @@ This project aims to predict the success of marketing campaigns conducted by a b
    ```json
    {
      "X": [
-       {
-         "age": 30,
-         "job": "admin.",
-         "marital": "married",
-         "education": "university.degree",
-         "default": "no",
-         "housing": "yes",
-         "loan": "no",
-         "contact": "cellular",
-         "month": "may",
-         "day_of_week": "mon",
-         "duration": 300,
+      ```json
+      {
+         "age": 33,
+         "job": "blue-collar",
+         "marital": "single",
+         "education": "professional.course",
+         "contact": "telephone",
+         "day_of_week": "fri",
          "campaign": 1,
-         "pdays": 999,
          "previous": 0,
          "poutcome": "nonexistent",
-         "emp.var.rate": 1.1,
-         "cons.price.idx": 93.994,
-         "cons.conf.idx": -36.4,
-         "euribor3m": 4.857,
-         "nr.employed": 5191
-       }
+         "y": "no",
+         "duration_mins": 0,
+         "education_level": "mid",
+         "job_type": "blue-collar",
+         "income_level": "mid",
+         "was_contacted_before": false,
+         "deposited_before": false
+      }
+      ```
      ]
    }
    ```
