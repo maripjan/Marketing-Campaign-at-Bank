@@ -24,6 +24,7 @@ async def predict(request: PredictionRequest):
     # Send predictions back as JSON
     return {'predictions': predictions.tolist()}
 
+...
 if __name__ == '__main__':
     import uvicorn
-    uvicorn.run(app, host='127.0.0.1', port=8000, debug=True)
+    uvicorn.run("fast_api:app", host='127.0.0.1', port=8000, reload=True)
